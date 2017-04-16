@@ -1,8 +1,6 @@
 #include "MineField.h"
 
 #include <stdio.h>
-#include <cstdlib>
-#include <ctime>
 
 int main()
 {
@@ -10,14 +8,25 @@ int main()
 	int height = 5;
 
 	MineField field(5, width, height);
-	field.PrintField();
+	field.PrintFullField();
 
-	std::srand(std::time(0)); // use current time as seed for random generator
+	printf("\n------------------------------------------\n");
 
-	int x = std::rand() % width;
-	int y = std::rand() % height;
+	while (true)
+	{
+		int x = 0;
+		int y = 0;
 
+		scanf("%i %i", &x, &y);
 
+		if (field.IsMine(x, y))
+		{
+			printf("BOOM!!!");
+			break;
+		}
+
+		field.PrintField();
+	}
 
 	getchar();
 	return 0;

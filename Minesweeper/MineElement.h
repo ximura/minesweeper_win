@@ -8,7 +8,11 @@ public:
 	virtual ~MineElement();
 	
 	virtual ElementStatus GetStatus() const;
-	virtual char GetValue() const;
+	virtual int GetValue() const;
+	virtual char GetValueStr() const;
 	virtual void IncrementValue();
+
+	virtual bool WasChecked() const;
+	virtual void Check();
 };
 

@@ -28,6 +28,19 @@ MineField::~MineField()
 	delete[] elements;
 }
 
+void MineField::PrintFullField() const
+{
+	for (int i = 0; i < height; ++i)
+	{
+		for (int j = 0; j < width; ++j)
+		{
+			const Element* element = GetElement(j, i);
+			printf("%c ", element->GetValueStr());
+		}
+		printf("\n");
+	}
+}
+
 void MineField::PrintField() const
 {
 	for (int i = 0; i < height; ++i)
@@ -35,7 +48,7 @@ void MineField::PrintField() const
 		for (int j = 0; j < width; ++j)
 		{
 			const Element* element = GetElement(j, i);
-			printf("%c ", element->GetValue());
+			printf("%c ", element->WasChecked() ? element->GetValueStr() : '?');
 		}
 		printf("\n");
 	}
@@ -43,10 +56,12 @@ void MineField::PrintField() const
 
 bool MineField::IsMine(int x, int y)
 {
-	const Element* element = GetElement(x, y);
+	Element* element = GetElement(x, y);
 
 	if (Mine == element->GetStatus())
 		return true;
+
+	Check(x, y);
 
 	return false;
 }
@@ -87,12 +102,17 @@ void MineField::GenerateField()
 	}
 }
 
-const Element* MineField::GetElement(int x, int y) const
+Element* MineField::GetElement(int x, int y) const
 {
+	if (x > width)
+		return 0;
+
+	if (y > height)
+		return 0;
+
 	int index = (y * width) + x;
 
-	const Element* element = GetElement(index);
-	return element;
+	return GetElement(index);
 }
 
 Element * MineField::GetElement(int index) const
@@ -106,6 +126,31 @@ Element * MineField::GetElement(int index) const
 	return elements[index];
 }
 
+void MineField::Check(int x, int y)
+{
+	Element* element = GetElement(x, y);
+
+	if (!element)
+		return;
+
+	if (element->WasChecked()) return;
+
+	element->Check();
+
+	if (element->GetValue() > 0) return;
+
+	Check(x + 1, y);
+	Check(x - 1, y);
+
+	Check(x + 1, y + 1);
+	Check(x, y + 1);
+	Check(x - 1, y + 1);
+
+	Check(x + 1, y - 1);
+	Check(x, y - 1);
+	Check(x - 1, y - 1);
+}
+
 const Element* MineField::PutMine(int& x, int& y)
 {
 	x = std::rand() % width;
@@ -113,7 +158,7 @@ const Element* MineField::PutMine(int& x, int& y)
 
 	int index = (y * width) + x;
 	Element* element = elements[index];
-	if (element->GetStatus() == Mine)
+	if (Mine == element->GetStatus())
 		return 0;
 
 	delete element;

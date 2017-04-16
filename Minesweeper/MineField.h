@@ -8,6 +8,9 @@ public:
 	~MineField();
 
 	void PrintField() const;
+
+	void PrintFullField() const;
+
 	bool IsMine(int x, int y);
 
 private:
@@ -15,8 +18,10 @@ private:
 
 	const Element* PutMine(int& x, int& y);
 
-	const Element* GetElement(int x, int y) const;
+	Element* GetElement(int x, int y) const;
 	Element* GetElement(int index) const;
+
+	void Check(int x, int y);
 
 private:
 	Element** elements;

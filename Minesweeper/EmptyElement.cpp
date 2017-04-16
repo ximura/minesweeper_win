@@ -2,7 +2,7 @@
 
 
 
-EmptyElement::EmptyElement() : counter(0)
+EmptyElement::EmptyElement() : counter(0), check(false)
 {
 }
 
@@ -16,7 +16,12 @@ ElementStatus EmptyElement::GetStatus() const
 	return None;
 }
 
-char EmptyElement::GetValue() const
+int EmptyElement::GetValue() const
+{
+	return counter;
+}
+
+char EmptyElement::GetValueStr() const
 {
 	return '0' + counter;
 }
@@ -24,4 +29,14 @@ char EmptyElement::GetValue() const
 void EmptyElement::IncrementValue()
 {
 	++counter;
+}
+
+bool EmptyElement::WasChecked() const
+{
+	return check;
+}
+
+void EmptyElement::Check()
+{
+	check = true;
 }
