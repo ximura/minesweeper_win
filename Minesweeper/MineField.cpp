@@ -9,23 +9,12 @@
 
 MineField::MineField(int _mines, int _width, int _height) : width(_width), height(_height), mines(_mines)
 {
-    elements = new Element*[_width * _height];
-    for (int i = 0; i < height * width; ++i)
-    {
-        elements[i] = 0;
-    }
-
+    elements.reserve(width * height);
     GenerateField();
 }
 
 MineField::~MineField()
 {
-    for (int i = 0; i < height * width; ++i)
-    {
-        delete elements[i];
-    }
-
-    delete[] elements;
 }
 
 void MineField::PrintFullField() const
@@ -34,7 +23,7 @@ void MineField::PrintFullField() const
     {
         for (int j = 0; j < width; ++j)
         {
-            const Element* element = GetElement(j, i);
+            std::shared_ptr<Element> element = GetElement(j, i);
             printf("%c ", element->GetValueStr());
         }
         printf("\n");
@@ -47,7 +36,7 @@ void MineField::PrintField() const
     {
         for (int j = 0; j < width; ++j)
         {
-            const Element* element = GetElement(j, i);
+            std::shared_ptr<Element> element = GetElement(j, i);
             printf("%c ", element->WasChecked() ? element->GetValueStr() : '?');
         }
         printf("\n");
@@ -56,7 +45,7 @@ void MineField::PrintField() const
 
 bool MineField::IsMine(int x, int y)
 {
-    Element* element = GetElement(x, y);
+    std::shared_ptr<Element> element = GetElement(x, y);
 
     if (ElementStatus::Mine == element->GetStatus())
         return true;
@@ -75,8 +64,7 @@ void MineField::GenerateField()
 
     for (size_t i = 0; i < width * height; ++i)
     {
-        Element* element = elements[i];
-        elements[i] = new EmptyElement();
+        elements.push_back(std::make_shared<EmptyElement>());
     }
 
     int closeTiles[] = { 1, 0, -1 };
@@ -87,12 +75,11 @@ void MineField::GenerateField()
         int x = x_distrib(gen);
         int y = y_distrib(gen);
 
-        Element* element = GetElement(x, y);
+        std::shared_ptr<Element> element = GetElement(x, y);
         if (ElementStatus::None == element->GetStatus())
         {
-            delete element;
             int index = GetElementIndex(x, y);
-            elements[index] = new  MineElement();
+            elements.at(index) = std::make_shared<MineElement>();
             // mine was added increment  counter
             // we can generate mine with same index so we need to repeat this iteration
             ++mineCounter;
@@ -104,7 +91,7 @@ void MineField::GenerateField()
                 {
                     int new_x = x + closeTiles[k];
                     int new_y = y + closeTiles[j];
-                    Element* element = GetElement(new_x, new_y);
+                    std::shared_ptr<Element> element = GetElement(new_x, new_y);
                     if (element)
                         element->IncrementValue();
                 }
@@ -113,7 +100,7 @@ void MineField::GenerateField()
     }
 }
 
-Element* MineField::GetElement(int x, int y) const
+std::shared_ptr<Element> MineField::GetElement(int x, int y) const
 {
     if (x < 0 || x > width)
         return nullptr;
@@ -126,7 +113,7 @@ Element* MineField::GetElement(int x, int y) const
     return GetElement(index);
 }
 
-Element* MineField::GetElement(int index) const
+std::shared_ptr<Element> MineField::GetElement(int index) const
 {
     if (index >= width * height)
         return nullptr;
@@ -134,12 +121,12 @@ Element* MineField::GetElement(int index) const
     if (index < 0)
         return nullptr;
 
-    return elements[index];
+    return elements.at(index);
 }
 
 void MineField::Check(int x, int y)
 {
-    Element* element = GetElement(x, y);
+    std::shared_ptr<Element> element = GetElement(x, y);
 
     if (!element)
         return;
@@ -160,21 +147,6 @@ void MineField::Check(int x, int y)
     Check(x + 1, y - 1);
     Check(x, y - 1);
     Check(x - 1, y - 1);
-}
-
-const Element* MineField::PutMine(int& x, int& y)
-{
-    x = std::rand() % width;
-    y = std::rand() % height;
-
-    int index = GetElementIndex(x, y);
-    Element* element = elements[index];
-    if (ElementStatus::Mine == element->GetStatus())
-        return nullptr;
-
-    delete element;
-    elements[index] = new  MineElement();
-    return elements[index];
 }
 
 int MineField::GetElementIndex(int x, int y) const

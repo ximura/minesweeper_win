@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+#include <memory>
+
 class Element;
 
 class MineField
@@ -16,17 +19,15 @@ public:
 private:
     void GenerateField();
 
-    const Element* PutMine(int& x, int& y);
-
-    Element* GetElement(int x, int y) const;
-    Element* GetElement(int index) const;
+    std::shared_ptr<Element> GetElement(int x, int y) const;
+    std::shared_ptr<Element> GetElement(int index) const;
 
     int GetElementIndex(int x, int y) const;
 
     void Check(int x, int y);
 
 private:
-    Element** elements;
+    std::vector<std::shared_ptr<Element>> elements;
 
     int width;
     int height;
