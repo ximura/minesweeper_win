@@ -1,6 +1,6 @@
 #pragma once
-enum ElementStatus
+enum class ElementStatus
 {
-	None = 0, 
-	Mine
+    None = 0,
+    Mine
 };

@@ -52,3 +52,6 @@ Temporary Items
 *.idb
 Debug/
 v15/
+/x64/Release
+/.vs/
+/Minesweeper/x64/Release

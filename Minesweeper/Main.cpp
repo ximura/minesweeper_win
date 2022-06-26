@@ -4,30 +4,40 @@
 
 int main()
 {
-	int width = 10;
-	int height = 5;
+    int size = 10;
+    int bombs = 5;
 
-	MineField field(5, width, height);
-	field.PrintFullField();
+    printf("Enter fied size:\n");
+    scanf("%i", &size);
 
-	printf("\n------------------------------------------\n");
+    printf("Enter bomb count:\n");
+    scanf("%i", &bombs);
 
-	while (true)
-	{
-		int x = 0;
-		int y = 0;
+    if (bombs > size * size) {
+        printf("We can't have bombs more then field size");
+        return 0;
+    }
 
-		scanf("%i %i", &x, &y);
+    MineField field(bombs, size, size);
+    field.PrintFullField();
 
-		if (field.IsMine(x, y))
-		{
-			printf("BOOM!!!");
-			break;
-		}
+    printf("\n------------------------------------------\n");
 
-		field.PrintField();
-	}
+    while (true)
+    {
+        int x = 0;
+        int y = 0;
 
-	getchar();
-	return 0;
+        scanf("%i %i", &x, &y);
+
+        if (field.IsMine(x, y))
+        {
+            printf("BOOM!!!");
+            break;
+        }
+
+        field.PrintField();
+    }
+
+    return 0;
 }

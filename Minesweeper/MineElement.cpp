@@ -10,7 +10,7 @@ MineElement::~MineElement()
 
 ElementStatus MineElement::GetStatus() const
 {
-	return Mine;
+	return ElementStatus::Mine;
 }
 
 int MineElement::GetValue() const

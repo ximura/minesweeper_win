@@ -13,30 +13,30 @@ EmptyElement::~EmptyElement()
 
 ElementStatus EmptyElement::GetStatus() const
 {
-	return None;
+    return ElementStatus::None;
 }
 
 int EmptyElement::GetValue() const
 {
-	return counter;
+    return counter;
 }
 
 char EmptyElement::GetValueStr() const
 {
-	return '0' + counter;
+    return '0' + counter;
 }
 
 void EmptyElement::IncrementValue()
 {
-	++counter;
+    ++counter;
 }
 
 bool EmptyElement::WasChecked() const
 {
-	return check;
+    return check;
 }
 
 void EmptyElement::Check()
 {
-	check = true;
+    check = true;
 }

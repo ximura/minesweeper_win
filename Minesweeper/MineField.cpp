@@ -3,165 +3,181 @@
 #include "MineElement.h"
 #include "EmptyElement.h"
 
+#include <random>
 #include <cstdlib>
-#include <ctime>
 #include <stdio.h>
 
-MineField::MineField(int _mines, int _width, int _height): width(_width), height(_height), mines(_mines)
+MineField::MineField(int _mines, int _width, int _height) : width(_width), height(_height), mines(_mines)
 {
-	elements = new Element*[_width*_height];
-	for (int i = 0; i < height * width; ++i)
-	{
-		elements[i] = 0;
-	}
+    elements = new Element*[_width * _height];
+    for (int i = 0; i < height * width; ++i)
+    {
+        elements[i] = 0;
+    }
 
-	GenerateField();
+    GenerateField();
 }
 
 MineField::~MineField()
 {
-	for (int i = 0; i < height * width; ++i)
-	{
-		delete elements[i];
-	}
+    for (int i = 0; i < height * width; ++i)
+    {
+        delete elements[i];
+    }
 
-	delete[] elements;
+    delete[] elements;
 }
 
 void MineField::PrintFullField() const
 {
-	for (int i = 0; i < height; ++i)
-	{
-		for (int j = 0; j < width; ++j)
-		{
-			const Element* element = GetElement(j, i);
-			printf("%c ", element->GetValueStr());
-		}
-		printf("\n");
-	}
+    for (int i = 0; i < height; ++i)
+    {
+        for (int j = 0; j < width; ++j)
+        {
+            const Element* element = GetElement(j, i);
+            printf("%c ", element->GetValueStr());
+        }
+        printf("\n");
+    }
 }
 
 void MineField::PrintField() const
 {
-	for (int i = 0; i < height; ++i)
-	{
-		for (int j = 0; j < width; ++j)
-		{
-			const Element* element = GetElement(j, i);
-			printf("%c ", element->WasChecked() ? element->GetValueStr() : '?');
-		}
-		printf("\n");
-	}
+    for (int i = 0; i < height; ++i)
+    {
+        for (int j = 0; j < width; ++j)
+        {
+            const Element* element = GetElement(j, i);
+            printf("%c ", element->WasChecked() ? element->GetValueStr() : '?');
+        }
+        printf("\n");
+    }
 }
 
 bool MineField::IsMine(int x, int y)
 {
-	Element* element = GetElement(x, y);
+    Element* element = GetElement(x, y);
 
-	if (Mine == element->GetStatus())
-		return true;
+    if (ElementStatus::Mine == element->GetStatus())
+        return true;
 
-	Check(x, y);
+    Check(x, y);
 
-	return false;
+    return false;
 }
 
 void MineField::GenerateField()
 {
-	std::srand(std::time(0)); // use current time as seed for random generator
-	
-	for (size_t i = 0; i < width * height; ++i)
-	{
-		Element* element = elements[i];
-		elements[i] = new EmptyElement();
-	}
+    std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_int_distribution<> x_distrib(0, width - 1);
+    std::uniform_int_distribution<> y_distrib(0, height - 1);
 
-	int closeTiles[] = { 1, 0, -1 };
+    for (size_t i = 0; i < width * height; ++i)
+    {
+        Element* element = elements[i];
+        elements[i] = new EmptyElement();
+    }
 
-	for (int i = 0; i < mines; ++i)
-	{
-		int x = 0;
-		int y = 0;
+    int closeTiles[] = { 1, 0, -1 };
 
-		while (PutMine(x, y) == 0);
+    int mineCounter = 0;
+    while (mineCounter < mines)
+    {
+        int x = x_distrib(gen);
+        int y = y_distrib(gen);
 
-		for (int j = 0; j < 3; ++j)
-		{
-			for (int k = 0; k < 3; ++k)
-			{
-				int new_x = x + closeTiles[k];
-				if (new_x < 0 || new_x >= width)
-					continue;
+        Element* element = GetElement(x, y);
+        if (ElementStatus::None == element->GetStatus())
+        {
+            delete element;
+            int index = GetElementIndex(x, y);
+            elements[index] = new  MineElement();
+            // mine was added increment  counter
+            // we can generate mine with same index so we need to repeat this iteration
+            ++mineCounter;
 
-				int index = ((y + closeTiles[j]) * width) + new_x;
-				Element* element = GetElement(index);
-				if (element)
-					element->IncrementValue();
-			}
-		}
-	}
+            //increment counter for neighbours
+            for (int j = 0; j < 3; ++j)
+            {
+                for (int k = 0; k < 3; ++k)
+                {
+                    int new_x = x + closeTiles[k];
+                    int new_y = y + closeTiles[j];
+                    Element* element = GetElement(new_x, new_y);
+                    if (element)
+                        element->IncrementValue();
+                }
+            }
+        }
+    }
 }
 
 Element* MineField::GetElement(int x, int y) const
 {
-	if (x > width)
-		return 0;
+    if (x < 0 || x > width)
+        return nullptr;
 
-	if (y > height)
-		return 0;
+    if (y < 0 || y > height)
+        return nullptr;
 
-	int index = (y * width) + x;
+    int index = GetElementIndex(x, y);
 
-	return GetElement(index);
+    return GetElement(index);
 }
 
-Element * MineField::GetElement(int index) const
+Element* MineField::GetElement(int index) const
 {
-	if (index >= width * height)
-		return 0;
+    if (index >= width * height)
+        return nullptr;
 
-	if (index < 0)
-		return 0;
+    if (index < 0)
+        return nullptr;
 
-	return elements[index];
+    return elements[index];
 }
 
 void MineField::Check(int x, int y)
 {
-	Element* element = GetElement(x, y);
+    Element* element = GetElement(x, y);
 
-	if (!element)
-		return;
+    if (!element)
+        return;
 
-	if (element->WasChecked()) return;
+    if (element->WasChecked()) return;
 
-	element->Check();
+    element->Check();
 
-	if (element->GetValue() > 0) return;
+    if (element->GetValue() > 0) return;
 
-	Check(x + 1, y);
-	Check(x - 1, y);
+    Check(x + 1, y);
+    Check(x - 1, y);
 
-	Check(x + 1, y + 1);
-	Check(x, y + 1);
-	Check(x - 1, y + 1);
+    Check(x + 1, y + 1);
+    Check(x, y + 1);
+    Check(x - 1, y + 1);
 
-	Check(x + 1, y - 1);
-	Check(x, y - 1);
-	Check(x - 1, y - 1);
+    Check(x + 1, y - 1);
+    Check(x, y - 1);
+    Check(x - 1, y - 1);
 }
 
 const Element* MineField::PutMine(int& x, int& y)
 {
-	x = std::rand() % width;
-	y = std::rand() % height;
+    x = std::rand() % width;
+    y = std::rand() % height;
 
-	int index = (y * width) + x;
-	Element* element = elements[index];
-	if (Mine == element->GetStatus())
-		return 0;
+    int index = GetElementIndex(x, y);
+    Element* element = elements[index];
+    if (ElementStatus::Mine == element->GetStatus())
+        return nullptr;
 
-	delete element;
-	elements[index] = new  MineElement();
-	return elements[index];
+    delete element;
+    elements[index] = new  MineElement();
+    return elements[index];
+}
+
+int MineField::GetElementIndex(int x, int y) const
+{
+    return (y * width) + x;
 }
