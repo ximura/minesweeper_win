@@ -43,16 +43,10 @@ void MineField::PrintField() const
     }
 }
 
-bool MineField::IsMine(int x, int y)
+bool MineField::IsMine(int x, int y) const
 {
     std::shared_ptr<Element> element = GetElement(x, y);
-
-    if (ElementStatus::Mine == element->GetStatus())
-        return true;
-
-    Check(x, y);
-
-    return false;
+    return element != nullptr && ElementStatus::Mine == element->GetStatus();
 }
 
 void MineField::GenerateField()
@@ -102,15 +96,12 @@ void MineField::GenerateField()
 
 std::shared_ptr<Element> MineField::GetElement(int x, int y) const
 {
-    if (x < 0 || x > width)
-        return nullptr;
-
-    if (y < 0 || y > height)
-        return nullptr;
-
-    int index = GetElementIndex(x, y);
-
-    return GetElement(index);
+    if (x >= 0 && x < width && y >= 0 && y < height)
+    {
+        int index = GetElementIndex(x, y);
+        return GetElement(index);
+    }
+    return nullptr;
 }
 
 std::shared_ptr<Element> MineField::GetElement(int index) const

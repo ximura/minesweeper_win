@@ -8,10 +8,10 @@ int main()
     int bombs = 5;
 
     printf("Enter fied size:\n");
-    scanf("%i", &size);
+    scanf_s("%i", &size);
 
     printf("Enter bomb count:\n");
-    scanf("%i", &bombs);
+    scanf_s("%i", &bombs);
 
     if (bombs > size * size) {
         printf("We can't have bombs more then field size");
@@ -28,7 +28,8 @@ int main()
         int x = 0;
         int y = 0;
 
-        scanf("%i %i", &x, &y);
+        printf("Enter coordinate to open from (0-%i)\n", size-1);
+        scanf_s("%i %i", &x, &y);
 
         if (field.IsMine(x, y))
         {
@@ -36,6 +37,7 @@ int main()
             break;
         }
 
+        field.Check(x, y);
         field.PrintField();
     }
 

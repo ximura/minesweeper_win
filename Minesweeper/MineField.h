@@ -10,11 +10,11 @@ public:
     MineField(int _mines, int _width, int _height);
     ~MineField();
 
+    bool IsMine(int x, int y) const;
+    void Check(int x, int y);
+
     void PrintField() const;
-
     void PrintFullField() const;
-
-    bool IsMine(int x, int y);
 
 private:
     void GenerateField();
@@ -23,8 +23,6 @@ private:
     std::shared_ptr<Element> GetElement(int index) const;
 
     int GetElementIndex(int x, int y) const;
-
-    void Check(int x, int y);
 
 private:
     std::vector<std::shared_ptr<Element>> elements;
